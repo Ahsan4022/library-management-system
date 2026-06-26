@@ -1,102 +1,73 @@
 # 📚 Library Management System
 
-A modular, menu-driven Python application for managing a library's books, members, and borrowing records. Built for the B100 Introduction to Computer Programming with Python assessment at Gisma University of Applied Sciences.
+A menu-driven Python application I built to manage a library's books, members, and borrowing records.
+
 
 ---
 
-## Project Purpose
+## What does it do?
 
-The system automates core library operations:
+I wanted to build something practical, so I chose a library system. It lets you:
 
-- Maintaining a searchable book catalog with copy-level inventory tracking
-- Registering and managing library members with tiered memberships
-- Issuing and processing book loans with automatic due-date tracking
-- Calculating and settling overdue fines at €0.50/day
+- Add books to a catalog and search for them by title, author, genre, or ISBN
+- Register library members with different membership types
+- Borrow and return books, with due dates automatically set to 14 days
+- Track overdue books and charge fines of €0.50 per day
+
+All data is automatically saved to CSV files so nothing is lost when you close the program.
 
 ---
 
 ## File Structure
 
 ```
-library_system/
+library-management-system/
 │
-├── main.py                        # Entry point — top-level CLI menu
+├── main.py                  # Start here — runs the main menu
 │
-├── models/                        # Domain entities (pure data + behaviour)
-│   ├── __init__.py
-│   ├── book.py                    # Book class
-│   ├── user.py                    # User class
-│   ├── borrow_record.py           # BorrowRecord class
-│   └── fine.py                    # Fine class
+├── models/                  # The main classes
+│   ├── book.py              # Book class
+│   ├── user.py              # User class
+│   ├── borrow_record.py     # Tracks each borrowing transaction
+│   └── fine.py              # Tracks overdue fines
 │
-├── services/                      # Business logic layer
-│   ├── __init__.py
-│   ├── book_service.py            # Catalog CRUD & search
-│   ├── user_service.py            # Member management
-│   └── borrow_service.py          # Loans, returns & fines
+├── services/                # All the business logic
+│   ├── book_service.py      # Adding, removing, searching books
+│   ├── user_service.py      # Registering and managing members
+│   └── borrow_service.py    # Borrowing, returning, and fines
 │
-├── menus/                         # Interactive CLI sub-menus
-│   ├── __init__.py
-│   ├── book_menu.py
-│   ├── user_menu.py
-│   └── borrow_menu.py
+├── menus/                   # What the user sees and interacts with
+│   ├── book_menu.py         # Book catalog menu
+│   ├── user_menu.py         # Member management menu
+│   └── borrow_menu.py       # Borrowing and returns menu
 │
-├── utils/                         # Shared helpers
-│   ├── __init__.py
-│   ├── storage.py                 # Generic CSV read/write
-│   ├── validators.py              # Input validation functions
-│   └── display.py                 # Console formatting helpers
+├── utils/                   # Helper functions used across the project
+│   ├── storage.py           # Reads and writes CSV files
+│   ├── validators.py        # Checks user input is valid
+│   └── display.py           # Makes the console output look nice
 │
-├── data/                          # CSV persistence layer
-│   ├── books.csv
-│   ├── users.csv
-│   ├── borrow_records.csv
-│   └── fines.csv
-│
-└── tests/                         # Automated test suite
-    ├── __init__.py
-    ├── test_book.py
-    ├── test_user.py
-    ├── test_borrow_record.py
-    └── test_services_integration.py
+└── data/                    # CSV files are created here automatically
+    ├── books.csv
+    ├── users.csv
+    ├── borrow_records.csv
+    └── fines.csv
 ```
 
 ---
 
-## Installation
-
-**Requirements:** Python 3.10 or later (uses `match` in type hints). No third-party packages required.
 
 ```bash
-# Clone the repository
-git clone https://github.com/<your-username>/library-management-system.git
+git clone https://github.com/Ahsan4022/library-management-system.git
 cd library-management-system
-
-# (Optional) create and activate a virtual environment
-python -m venv venv
-source venv/bin/activate     # macOS/Linux
-venv\Scripts\activate        # Windows
-
-# No pip install needed — standard library only
-```
-
----
-
-## Running the Application
-
-```bash
-cd library_system
 python main.py
 ```
 
 ---
 
-## Example Usage
+## Example
 
 ```
-──────────────────────────────────────────────────────────────
   MAIN MENU
-──────────────────────────────────────────────────────────────
   1. Book Catalog
   2. Member Management
   3. Borrowing & Returns
@@ -104,70 +75,48 @@ python main.py
 
   → Your choice: 3
 
-──────────────────────────────────────────────────────────────
   BORROWING & RETURNS
-──────────────────────────────────────────────────────────────
   1. Borrow a book
-  ...
 
   → Your choice: 1
   → User ID: U001
   → Book ISBN: 9780451524935
   ✔  Book borrowed successfully!
-  ℹ  [R001] User:U001 | ISBN:9780451524935 | Borrowed:2026-06-17 | Due:2026-07-01 | Status:active
+  ℹ  [R001] User:U001 | ISBN:9780451524935 | Due:2026-07-10 | Status:active
 ```
 
 ---
 
-## Key Features
+## Features
 
-| Feature | Detail |
+| Feature | How it works |
 |---|---|
-| Book catalog | Add, update, remove, and search books by title/author/genre/ISBN |
-| Inventory | Per-copy tracking; prevents over-issue |
-| Membership tiers | Standard (3), Student (5), Premium (10) borrow limits |
-| Borrow / return | Full lifecycle with automatic due-date assignment |
-| Overdue detection | Status refreshed on every startup and return |
-| Fines | Auto-calculated at €0.50/overdue day; pay or waive via menu |
-| CSV persistence | All data stored in human-readable CSV files under `data/` |
-| Exception handling | All user-facing errors caught and displayed gracefully |
-| PEP 8 compliant | Full docstrings on every class and method |
+| Book catalog | You can add, update, remove, and search books |
+| Copy tracking | Keeps track of how many copies are available |
+| Membership tiers | Standard members can borrow 3 books, Student 5, Premium 10 |
+| Borrowing | Books are due back after 14 days |
+| Overdue detection | The system checks for overdue books every time it starts |
+| Fines | €0.50 is charged for each day a book is overdue |
+| CSV storage | Everything is saved to simple CSV files you can open in Excel |
+| Error handling | If something goes wrong, a clear error message is shown |
 
 ---
 
-## Running Tests
+## Python concepts I used
 
-```bash
-cd library_system
-pip install pytest   # only dependency for tests
-pytest tests/ -v
-```
-
----
-
-## Python Concepts Demonstrated
-
-| Concept | Where |
+| Concept | Where I used it |
 |---|---|
-| **Classes & Objects** | `models/book.py`, `models/user.py`, `models/borrow_record.py`, `models/fine.py` |
-| **Methods (4+ per class)** | All model classes |
-| **Control structures** | Loops & conditionals throughout services and menus |
-| **File I/O** | `utils/storage.py` — CSV read/write/append |
-| **Exception handling** | Service layer raises; menu layer catches and displays |
-| **Modules & packages** | 5 packages (`models`, `services`, `menus`, `utils`, `tests`) |
-| **PEP 8 & docstrings** | Every file, class, and function documented |
-| **Dataclasses** | `@dataclass` decorator used on all model classes |
-| **Type hints** | All function signatures annotated |
-
----
-
-## Data Files
-
-CSV files in `data/` are plain text and can be inspected or pre-populated manually. Sample data for 8 books and 4 users is included.
+| Classes and Objects | Book, User, BorrowRecord, and Fine in the models folder |
+| Methods | Every class has multiple methods for different actions |
+| Loops and conditionals | Used throughout the menus and services |
+| File I/O | storage.py reads and writes all data to CSV files |
+| Exception handling | try/except blocks catch errors in all menu actions |
+| Modules and packages | Code is split across models, services, menus, and utils |
+| Comments | Added to explain what each part of the code does |
 
 ---
 
 ## Author
 
-Student — Gisma University of Applied Sciences, School of Computer Science  
+Muhammad Ahsan Tahir — Gisma University of Applied Sciences  
 Module: B100 Introduction to Computer Programming with Python
