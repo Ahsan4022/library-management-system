@@ -1,4 +1,4 @@
-# 📚 Library Management System
+# Library Management System
 
 A menu-driven Python application I built to manage a library's books, members, and borrowing records.
 
