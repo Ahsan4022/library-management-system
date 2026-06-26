@@ -119,4 +119,5 @@ python main.py
 ## Author
 
 Muhammad Ahsan Tahir — Gisma University of Applied Sciences  
-Module: B100 Introduction to Computer Programming with Python
+Roll Number: GH1050837  
+Module: B100C Python Programming
