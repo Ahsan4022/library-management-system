@@ -1,19 +1,12 @@
 """
 menus/book_menu.py
-------------------
-Interactive CLI sub-menu for book catalog management.
 """
 
 from services.book_service import BookService
 from utils import display as ui
 
 
-def run(book_svc: BookService) -> None:
-    """Display and handle the Book Management sub-menu loop.
-
-    Args:
-        book_svc: Shared BookService instance.
-    """
+def run(book_svc):
     while True:
         ui.header("Book Management")
         print("  1. List all books")
@@ -27,9 +20,9 @@ def run(book_svc: BookService) -> None:
         choice = ui.prompt("Your choice")
 
         if choice == "1":
-            _list_all(book_svc)
+            ui.listing(book_svc.list_all(), "No books found.")
         elif choice == "2":
-            _list_available(book_svc)
+            ui.listing(book_svc.list_available(), "No available books.")
         elif choice == "3":
             _search(book_svc)
         elif choice == "4":
@@ -41,38 +34,20 @@ def run(book_svc: BookService) -> None:
         elif choice == "0":
             break
         else:
-            ui.error("Invalid option. Please try again.")
+            ui.error("Invalid option.")
 
 
-# ------------------------------------------------------------------
-# Sub-handlers
-# ------------------------------------------------------------------
-
-def _list_all(svc: BookService) -> None:
-    ui.header("All Books")
-    ui.listing(svc.list_all(), "The catalog is empty.")
-
-
-def _list_available(svc: BookService) -> None:
-    ui.header("Available Books")
-    ui.listing(svc.list_available(), "No books currently available.")
-
-
-def _search(svc: BookService) -> None:
-    ui.header("Search Books")
-    field = ui.prompt("Search by (title/author/genre/isbn) [default: title]") or "title"
+def _search(svc):
+    field = ui.prompt("Search by (title/author/genre/isbn)") or "title"
     query = ui.prompt("Search query")
     if not query:
-        ui.error("Search query cannot be empty.")
+        ui.error("Query cannot be empty.")
         return
-    try:
-        results = svc.search(query, field)
-        ui.listing(results, f"No books matched '{query}'.")
-    except ValueError as exc:
-        ui.error(str(exc))
+    results = svc.search(query, field)
+    ui.listing(results, "No books found.")
 
 
-def _add_book(svc: BookService) -> None:
+def _add_book(svc):
     ui.header("Add Book")
     isbn = ui.prompt("ISBN")
     title = ui.prompt("Title")
@@ -82,34 +57,35 @@ def _add_book(svc: BookService) -> None:
     copies_str = ui.prompt("Number of copies [default: 1]") or "1"
 
     try:
-        book = svc.add_book(
-            isbn=isbn,
-            title=title,
-            author=author,
-            genre=genre,
-            year=int(year_str),
-            copies=int(copies_str),
-        )
-        ui.success(f"Book added: {book}")
-    except (ValueError, RuntimeError) as exc:
-        ui.error(str(exc))
+        book = svc.add_book(isbn, title, author, genre, int(year_str), int(copies_str))
+        ui.success("Book added: " + str(book))
+    except Exception as e:
+        ui.error(str(e))
 
 
-def _update_book(svc: BookService) -> None:
+def _update_book(svc):
     ui.header("Update Book")
     isbn = ui.prompt("ISBN of book to update")
     book = svc.get_book(isbn)
     if book is None:
-        ui.error(f"No book found with ISBN '{isbn}'.")
+        ui.error("Book not found.")
         return
 
-    ui.info(f"Current details: {book}")
+    ui.info("Current: " + str(book))
     updates = {}
-    for field, label in [("title", "New title"), ("author", "New author"),
-                          ("genre", "New genre"), ("year", "New year")]:
-        val = ui.prompt(f"{label} [leave blank to keep]")
-        if val:
-            updates[field] = int(val) if field == "year" else val
+    title = ui.prompt("New title [blank to keep]")
+    author = ui.prompt("New author [blank to keep]")
+    genre = ui.prompt("New genre [blank to keep]")
+    year = ui.prompt("New year [blank to keep]")
+
+    if title:
+        updates["title"] = title
+    if author:
+        updates["author"] = author
+    if genre:
+        updates["genre"] = genre
+    if year:
+        updates["year"] = int(year)
 
     if not updates:
         ui.info("No changes made.")
@@ -117,25 +93,25 @@ def _update_book(svc: BookService) -> None:
 
     try:
         updated = svc.update_book(isbn, **updates)
-        ui.success(f"Updated: {updated}")
-    except (ValueError, KeyError) as exc:
-        ui.error(str(exc))
+        ui.success("Updated: " + str(updated))
+    except Exception as e:
+        ui.error(str(e))
 
 
-def _remove_book(svc: BookService) -> None:
+def _remove_book(svc):
     ui.header("Remove Book")
     isbn = ui.prompt("ISBN of book to remove")
     book = svc.get_book(isbn)
     if book is None:
-        ui.error(f"No book found with ISBN '{isbn}'.")
+        ui.error("Book not found.")
         return
 
-    ui.info(f"About to remove: {book}")
+    ui.info("About to remove: " + str(book))
     if ui.confirm("Are you sure?"):
         try:
             svc.remove_book(isbn)
-            ui.success("Book removed successfully.")
-        except RuntimeError as exc:
-            ui.error(str(exc))
+            ui.success("Book removed.")
+        except Exception as e:
+            ui.error(str(e))
     else:
-        ui.info("Removal cancelled.")
+        ui.info("Cancelled.")

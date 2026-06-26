@@ -1,19 +1,12 @@
 """
 menus/borrow_menu.py
---------------------
-Interactive CLI sub-menu for borrowing, returning books, and managing fines.
 """
 
 from services.borrow_service import BorrowService
 from utils import display as ui
 
 
-def run(borrow_svc: BorrowService) -> None:
-    """Display and handle the Borrowing sub-menu loop.
-
-    Args:
-        borrow_svc: Shared BorrowService instance.
-    """
+def run(borrow_svc):
     while True:
         ui.header("Borrowing & Returns")
         print("  1. Borrow a book")
@@ -50,23 +43,19 @@ def run(borrow_svc: BorrowService) -> None:
             ui.error("Invalid option.")
 
 
-# ------------------------------------------------------------------
-# Sub-handlers
-# ------------------------------------------------------------------
-
-def _borrow(svc: BorrowService) -> None:
+def _borrow(svc):
     ui.header("Borrow a Book")
     user_id = ui.prompt("User ID")
     isbn = ui.prompt("Book ISBN")
     try:
         record = svc.borrow_book(user_id, isbn)
-        ui.success(f"Book borrowed successfully!")
+        ui.success("Book borrowed successfully!")
         ui.info(str(record))
-    except (KeyError, RuntimeError) as exc:
-        ui.error(str(exc))
+    except Exception as e:
+        ui.error(str(e))
 
 
-def _return_book(svc: BorrowService) -> None:
+def _return_book(svc):
     ui.header("Return a Book")
     record_id = ui.prompt("Borrow Record ID")
     try:
@@ -74,62 +63,64 @@ def _return_book(svc: BorrowService) -> None:
         ui.success("Book returned successfully.")
         ui.info(str(record))
         if fine:
-            ui.info(f"⚠  Overdue fine issued: {fine}")
+            ui.info("Overdue fine issued: " + str(fine))
         else:
             ui.info("No fine — returned on time.")
-    except (KeyError, RuntimeError) as exc:
-        ui.error(str(exc))
+    except Exception as e:
+        ui.error(str(e))
 
 
-def _active_loans(svc: BorrowService) -> None:
+def _active_loans(svc):
     ui.header("Active Loans")
     uid = ui.prompt("Filter by User ID [blank for all]") or None
     ui.listing(svc.active_loans(uid), "No active loans.")
 
 
-def _overdue_loans(svc: BorrowService) -> None:
+def _overdue_loans(svc):
     ui.header("Overdue Loans")
     overdue = svc.overdue_loans()
     if not overdue:
-        ui.info("No overdue loans — great news!")
+        ui.info("No overdue loans!")
         return
     for r in overdue:
-        print(f"  {r}  (overdue by {r.days_overdue()} day(s))")
+        print("  " + str(r) + " (overdue by " + str(r.days_overdue()) + " day(s))")
 
 
-def _history(svc: BorrowService) -> None:
+def _history(svc):
     ui.header("Borrow History")
     uid = ui.prompt("Filter by User ID [blank for all]") or None
-    ui.listing(svc.loan_history(uid), "No borrow history found.")
+    ui.listing(svc.loan_history(uid), "No history found.")
 
 
-def _outstanding_fines(svc: BorrowService) -> None:
+def _outstanding_fines(svc):
     ui.header("Outstanding Fines")
     fines = svc.outstanding_fines()
     if not fines:
         ui.info("No outstanding fines.")
         return
-    total = sum(f.amount for f in fines)
+    total = 0
+    for f in fines:
+        total += f.amount
     ui.listing(fines)
-    print(f"\n  Total outstanding: €{total:.2f}")
+    print("\n  Total outstanding: €" + str(round(total, 2)))
 
 
-def _pay_fine(svc: BorrowService) -> None:
+def _pay_fine(svc):
     ui.header("Pay Fine")
     fine_id = ui.prompt("Fine ID")
     try:
         fine = svc.pay_fine(fine_id)
-        ui.success(f"Fine {fine.fine_id} marked as paid. Thank you!")
-    except (KeyError, RuntimeError) as exc:
-        ui.error(str(exc))
+        ui.success("Fine " + fine.fine_id + " marked as paid!")
+    except Exception as e:
+        ui.error(str(e))
 
 
-def _waive_fine(svc: BorrowService) -> None:
+def _waive_fine(svc):
     ui.header("Waive Fine")
     fine_id = ui.prompt("Fine ID to waive")
     if ui.confirm("Confirm waiver?"):
         try:
             fine = svc.waive_fine(fine_id)
-            ui.success(f"Fine {fine.fine_id} has been waived.")
-        except KeyError as exc:
-            ui.error(str(exc))
+            ui.success("Fine " + fine.fine_id + " has been waived.")
+        except Exception as e:
+            ui.error(str(e))
